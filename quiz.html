@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Quiz System</title>
+    <script type="importmap">
+        {
+            "imports": {
+                "@google/generative-ai": "https://esm.run/@google/generative-ai"
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --background-color: #ecf0f1;
+            --text-color: #34495e;
+            --accent-color: #e74c3c;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1,
+        h2 {
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        #quiz-selector,
+        #question-container,
+        #result-container,
+        #explanation-container {
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .option {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            text-align: left;
+        }
+
+        #explanation {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .correct {
+            background-color: #2ecc71;
+        }
+
+        .incorrect {
+            background-color: #e74c3c;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Financial Quiz System</h1>
+        <div id="quiz-selector">
+            <h2>Select a Quiz</h2>
+            <button onclick="startQuiz(1)">Quiz 1</button>
+            <button onclick="startQuiz(2)">Quiz 2</button>
+            <button onclick="startQuiz(3)">Quiz 3</button>
+        </div>
+        <div id="question-container" style="display: none;">
+            <h2 id="question-text"></h2>
+            <div id="options"></div>
+        </div>
+        <div id="result-container" style="display: none;"></div>
+        <div id="explanation-container" style="display: none;">
+            <h3>Explanation:</h3>
+            <div id="explanation"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+
+        const API_KEY = ""; // Replace with your actual API key
+        const genAI = new GoogleGenerativeAI(API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+
+        
+        let quizzes = [
+            [
+                {
+                    question: "What is the term for the total value of a company's outstanding shares?",
+                    options: ["Market capitalization", "Book value", "Enterprise value", "Equity value"],
+                    correctAnswer: 0
+                },
+                {
+                    question: "Which financial ratio measures a company's ability to pay short-term obligations?",
+                    options: ["Debt-to-equity ratio", "Price-to-earnings ratio", "Current ratio", "Return on equity"],
+                    correctAnswer: 2
+                },
+                // Add 8 more questions for Quiz 1
+            ],
+            [
+                {
+                    question: "What is the term for a decrease in the value of money over time?",
+                    options: ["Deflation", "Inflation", "Stagflation", "Hyperinflation"],
+                    correctAnswer: 1
+                },
+                {
+                    question: "Which investment vehicle is known for its tax advantages in retirement saving?",
+                    options: ["Certificate of Deposit", "Money Market Account", "401(k)", "Savings Account"],
+                    correctAnswer: 2
+                },
+                // Add 8 more questions for Quiz 2
+            ],
+            [
+                {
+                    question: "What is the term for the difference between an asset's purchase price and its selling price?",
+                    options: ["Dividend", "Capital gain", "Interest", "Yield"],
+                    correctAnswer: 1
+                },
+                {
+                    question: "Which of the following is typically considered the safest investment?",
+                    options: ["Stocks", "Real Estate", "Corporate Bonds", "Government Bonds"],
+                    correctAnswer: 3
+                },
+                // Add 8 more questions for Quiz 3
+            ]
+        ];
+
+        let currentQuiz = [];
+        let currentQuestionIndex = 0;
+        let incorrectQuestions = [];
+        let userAnswers = [];
+
+        window.startQuiz = function (quizNumber) {
+            currentQuiz = quizzes[quizNumber - 1];
+            currentQuestionIndex = 0;
+            incorrectQuestions = [];
+            userAnswers = [];
+            displayQuestion();
+            document.getElementById('quiz-selector').style.display = 'none';
+            document.getElementById('question-container').style.display = 'block';
+        }
+
+        function displayQuestion() {
+            const questionContainer = document.getElementById('question-container');
+            const questionText = document.getElementById('question-text');
+            const optionsContainer = document.getElementById('options');
+
+            questionText.textContent = currentQuiz[currentQuestionIndex].question;
+            optionsContainer.innerHTML = '';
+
+            currentQuiz[currentQuestionIndex].options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.className = 'option';
+                button.onclick = () => checkAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selectedIndex) {
+            const correct = selectedIndex === currentQuiz[currentQuestionIndex].correctAnswer;
+
+            userAnswers.push(selectedIndex);
+
+            if (!correct) {
+                incorrectQuestions.push(currentQuestionIndex);
+            }
+
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < currentQuiz.length) {
+                displayQuestion();
+            } else {
+                handleQuizCompletion();
+            }
+        }
+
+        async function handleQuizCompletion() {
+            if (incorrectQuestions.length === 0) {
+                displayResult("Congratulations! You've answered all questions correctly!");
+            } else {
+                await reviewIncorrectQuestions();
+            }
+        }
+
+        async function reviewIncorrectQuestions() {
+            for (let i = 0; i < incorrectQuestions.length; i++) {
+                const questionIndex = incorrectQuestions[i];
+                const question = currentQuiz[questionIndex];
+
+                await askBasicQuestion(question);
+
+                // Wait for user to acknowledge the explanation
+                await new Promise(resolve => {
+                    const button = document.createElement('button');
+                    button.textContent = "I understand, continue to the next question";
+                    button.onclick = () => {
+                        document.getElementById('explanation-container').style.display = 'none';
+                        resolve();
+                    };
+                    document.getElementById('explanation-container').appendChild(button);
+                });
+            }
+
+            displayFinalResult();
+        }
+
+        function displayFinalResult() {
+            const correctCount = currentQuiz.length - incorrectQuestions.length;
+            const resultMessage = `Quiz completed! Your score: ${correctCount}/${currentQuiz.length}`;
+
+            let incorrectQuestionsMessage = "Questions answered incorrectly:";
+            incorrectQuestions.forEach(index => {
+                incorrectQuestionsMessage += `\n- ${currentQuiz[index].question}`;
+            });
+
+            displayResult(resultMessage + "\n\n" + incorrectQuestionsMessage);
+        }
+
+        async function askBasicQuestion(question) {
+            const prompt = `Generate a basic question related to the concept of "${question.question}" that would help someone understand the topic better. Also provide a brief explanation of the concept.`;
+
+            try {
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                const text = response.text();
+
+                const [basicQuestion, explanation] = text.split('\n\n');
+
+                displayExplanation(basicQuestion, explanation);
+            } catch (error) {
+                console.error("Error generating basic question:", error);
+            }
+        }
+
+        function displayExplanation(basicQuestion, explanation) {
+            const explanationContainer = document.getElementById('explanation-container');
+            const explanationText = document.getElementById('explanation');
+
+            explanationText.innerHTML = `<p><strong>Basic Question:</strong> ${basicQuestion}</p><p><strong>Explanation:</strong> ${explanation}</p>`;
+            explanationContainer.style.display = 'block';
+        }
+
+        function displayResult(message) {
+            document.getElementById('question-container').style.display = 'none';
+            const resultContainer = document.getElementById('result-container');
+            resultContainer.innerHTML = message.replace(/\n/g, '<br>');
+            resultContainer.style.display = 'block';
+
+            const restartButton = document.createElement('button');
+            restartButton.textContent = "Start Another Quiz";
+            restartButton.onclick = () => {
+                resultContainer.style.display = 'none';
+                document.getElementById('quiz-selector').style.display = 'block';
+            };
+            resultContainer.appendChild(restartButton);
+        }
+    </script>
+</body>
+
+</html>

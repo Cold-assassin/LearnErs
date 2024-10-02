@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Literacy</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #F4C2C2;
+        }
+
+        header {
+            background-color: #C24641;
+            color: #fff;
+            padding: 1rem;
+            text-align: center;
+            position: relative;
+        }
+
+        header img {
+            position: absolute;
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+            height: 50px;
+        }
+
+        header h1 {
+            margin-left: 100px; /* Add some space for the logo */
+        }
+
+        main {
+            padding: 2rem;
+            text-align: center;
+            background-color: #F4C2C2;
+        }
+
+        footer {
+            background-color: #C24641;
+            color: #F4C2C2;
+            text-align: center;
+            padding: 1rem;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+
+        .box-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .box {
+            background-color: #333;
+            color: #fff;
+            padding: 2rem;
+            width: 150px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .box:hover {
+            background-color: #555;
+        }
+
+        /* Ensure links don't turn purple after being clicked */
+        .box a {
+            color: inherit;         /* Inherit the color from the parent box */
+            text-decoration: none;  /* Remove underline */
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .box a:visited {
+            color: inherit;  /* Prevent the visited color (purple) */
+        }
+
+        .content-section {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #F4C2C2;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        p {
+            font-size: 1.2rem;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="logo1.jpg">
+        <h1>LearnErs</h1>
+        <h2>Welcome to Financial Literacy</h2>
+    </header>
+
+    <main>
+        <p>Learn about financial topics through interactive lessons, quizzes, and trading in real time.</p>
+
+        <!-- Box Container -->
+        <div class="box-container">
+            <div class="box" onclick="window.location.href='module/module.html'">
+                <h3>Home</h3>
+            </div>
+            <div class="box">
+                <a href="module/module.html">
+                    <h3>Modules</h3>
+                </a>
+            </div>
+            <div class="box">
+                <a href="quiz/quiz.html">
+                    <h3>Quiz</h3>
+                </a>
+            </div>
+        </div>
+
+        <div class="box-container">
+            <div class="box">
+                <a href="case study/casestudy.html">
+                    <h3>Case Study</h3>
+                </a>
+            </div>
+            <div class="box">
+                <a href="training/templates/index.html">
+                    <h3>Training</h3>
+                </a>
+            </div>
+            <div class="box">
+                <a href="portifilo/portfolio.html">
+                    <h3>Portfolio Analyser</h3>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2024 Financial Literacy</p>
+    </footer>
+
+    <script>
+        function showContent(section) {
+            console.log("Show content for: " + section);
+        }
+    </script>
+</body>
+</html>

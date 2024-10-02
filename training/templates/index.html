@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Trading App</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #C24641;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #F4C2C2;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        /* Heading Styles */
+        h1,
+        h2 {
+            color: #333;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+            
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Response and Chart Styles */
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .actions .form-group {
+            flex: 1;
+            margin: 0 10px;
+        }
+
+        .bottom-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .bottom-actions .form-group {
+            flex: 1;
+            margin: 0 10px;
+        }
+
+        canvas {
+            width: 900px;
+            height: 400px;
+            max-height: 700px;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+       
+    </style>
+
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include Luxon -->
+    <script src="https://cdn.jsdelivr.net/npm/luxon@1.26.0/build/global/luxon.min.js"></script>
+    <!-- Include Chart.js Date Adapter -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.1.0/dist/chartjs-adapter-luxon.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Stock Trading App</h1>
+
+        <div class="chart-container">
+            <div class="form-group">
+                <h2>Live Stock Data</h2>
+                <label for="chart-symbol">Stock Symbol:</label>
+                <input type="text" id="chart-symbol">
+                <button onclick="updateChart()">Update Chart</button>
+                <canvas id="stockChart"></canvas>
+            </div>
+
+            <div class="actions">
+                <div class="form-group">
+                    <h2>Buy Stock</h2>
+                    <label for="buy-symbol">Stock Symbol:</label>
+                    <input type="text" id="buy-symbol">
+                    <label for="buy-quantity">Quantity:</label>
+                    <input type="number" id="buy-quantity">
+                    <button onclick="buyStock()">Buy</button>
+                </div>
+
+                <div class="form-group">
+                    <h2>Sell Stock</h2>
+                    <label for="sell-symbol">Stock Symbol:</label>
+                    <input type="text" id="sell-symbol">
+                    <label for="sell-quantity">Quantity:</label>
+                    <input type="number" id="sell-quantity">
+                    <button onclick="sellStock()">Sell</button>
+                </div>
+                <div class="form-group">
+                    <h2>Search Stock Price</h2>
+                    <label for="search-symbol">Stock Symbol:</label>
+                    <input type="text" id="search-symbol">
+                    <button onclick="searchStock()">Search</button>
+                </div>
+            </div>
+
+            <div class="bottom-actions">
+                <div class="form-group">
+                    <h2>Check Portfolio</h2>
+                    <button onclick="checkPortfolio()">Show Portfolio</button>
+                </div>
+
+               
+            </div>
+            <div class = "nice">
+            <form action="/export_portfolio_txt" method="get">
+                <button type="submit">Download Portfolio Report</button>
+            </form>
+
+            <div class="response" id="response"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript code here -->
+    <script>
+        let stockChart = null;
+
+        function updateResponse(message) {
+            const responseDiv = document.getElementById('response');
+            responseDiv.innerText = message;
+            responseDiv.style.display = 'block';
+        }
+
+        function buyStock() {
+            const symbol = document.getElementById('buy-symbol').value.toUpperCase().trim();
+            const quantity = document.getElementById('buy-quantity').value.trim();
+
+            if (!symbol || !quantity) {
+                updateResponse("Please enter a valid stock symbol and quantity.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('symbol', symbol);
+            formData.append('quantity', quantity);
+
+            fetch('/buy', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => updateResponse(data.message || data.error))
+                .catch(error => updateResponse(`Error: ${error.message}`));
+        }
+
+        function sellStock() {
+            const symbol = document.getElementById('sell-symbol').value.toUpperCase().trim();
+            const quantity = document.getElementById('sell-quantity').value.trim();
+
+            if (!symbol || !quantity) {
+                updateResponse("Please enter a valid stock symbol and quantity.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('symbol', symbol);
+            formData.append('quantity', quantity);
+
+            fetch('/sell', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => updateResponse(data.message || data.error))
+                .catch(error => updateResponse(`Error: ${error.message}`));
+        }
+
+        function searchStock() {
+            const symbol = document.getElementById('search-symbol').value.toUpperCase().trim();
+
+            if (!symbol) {
+                updateResponse("Please enter a valid stock symbol.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('symbol', symbol);
+
+            fetch('/search', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.price !== undefined) {
+                        updateResponse(`The current price of ${symbol} is $${data.price.toFixed(2)}`);
+                    } else {
+                        updateResponse(data.error);
+                    }
+                })
+                .catch(error => updateResponse(`Error: ${error.message}`));
+        }
+
+
+        function checkPortfolio() {
+            fetch('/portfolio')
+                .then(response => response.json())
+                .then(data => {
+                    let message = `Cash: $${data.cash.toFixed(2)}\n`;
+                    data.portfolio.forEach(stock => {
+                        if (stock.current_price !== undefined && stock.value !== undefined) {
+                            message += `${stock.symbol}: ${stock.quantity} shares, Current Price: $${stock.current_price.toFixed(2)}, Value: $${stock.value.toFixed(2)}\n`;
+                        }
+                    });
+                    message += `Total Portfolio Value: $${data.total_value.toFixed(2)}`;
+                    updateResponse(message);
+                })
+                .catch(error => updateResponse(`Error: ${error.message}`));
+        }
+
+        function updateChart() {
+            const symbol = document.getElementById('chart-symbol').value.toUpperCase().trim();
+
+            if (!symbol) {
+                updateResponse("Please enter a valid stock symbol.");
+                return;
+            }
+
+            fetch(`/live-stock-data/${symbol}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        updateResponse(data.error);
+                    } else {
+                        const labels = data.data.map(point => new Date(point[0]));
+                        const prices = data.data.map(point => point[1]);
+
+                        const ctx = document.getElementById('stockChart').getContext('2d');
+                        if (stockChart) {
+                            stockChart.destroy();
+                        }
+
+                        stockChart = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: `Price of ${symbol}`,
+                                    data: prices,
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                    fill: false
+                                }]
+                            },
+                            options: {
+                                scales: {
+                                    x: {
+                                        type: 'time',
+                                        time: {
+                                            unit: 'minute'
+                                        },
+                                        title: {
+                                            display: true,
+                                            text: 'Time'
+                                        }
+                                    },
+                                    y: {
+                                        beginAtZero: false,
+                                        title: {
+                                            display: true,
+                                            text: 'Price'
+                                        }
+                                    }
+                                }
+                            }
+                        });
+
+                        // Update the chart every minute
+                        setInterval(() => {
+                            fetch(`/live-stock-data/${symbol}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (!data.error) {
+                                        const now = new Date();
+                                        labels.push(now);
+                                        prices.push(data.data[data.data.length - 1][1]);
+                                        stockChart.update();
+                                    }
+                                });
+                        }, 60000); // Update every minute
+                    }
+                })
+                .catch(error => updateResponse(`Error: ${error.message}`));
+        }
+    </script>
+</body>
+
+</html>

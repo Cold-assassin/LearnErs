@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Learning Hub</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --background-color: #ecf0f1;
+            --text-color: #34495e;
+            --accent-color: #e74c3c;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 40px 0;
+            color: var(--secondary-color);
+            font-size: 2.5em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .module-header {
+            width: 100%;
+            padding: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            text-align: left;
+            cursor: pointer;
+            font-size: 18px;
+            border: none;
+            outline: none;
+            margin: 10px 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .module-header:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .module-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, padding 0.5s ease, opacity 0.5s ease;
+            background-color: #fff;
+            margin-bottom: 20px;
+            padding: 0 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            opacity: 0;
+        }
+
+        .module-content.open {
+            max-height: 1000px;
+            padding: 20px;
+            opacity: 1;
+        }
+
+        iframe {
+            width: 100%;
+            height: 400px;
+            border: none;
+            border-radius: 8px;
+        }
+
+        #chatButton {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 15px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        #chatButton:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.1);
+        }
+
+        #chatbox {
+            display: none;
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 350px;
+            height: 500px;
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            overflow: hidden;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        #chatboxHeader {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        #chatboxMessages {
+            padding: 20px;
+            height: 350px;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+
+        .user-message {
+            background-color: var(--primary-color);
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .ai-message {
+            background-color: #f1f1f1;
+            color: var(--text-color);
+            align-self: flex-start;
+        }
+
+        #chatboxInput {
+            display: flex;
+            border-top: 1px solid #ddd;
+            padding: 10px;
+        }
+
+        #chatboxInput input {
+            flex: 1;
+            border: none;
+            padding: 10px;
+            outline: none;
+            font-size: 16px;
+        }
+
+        #chatboxInput button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        #chatboxInput button:hover {
+            background-color: var(--secondary-color);
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "@google/generative-ai": "https://esm.run/@google/generative-ai"
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Investment Learning Hub</h1>
+
+        <button class="module-header" onclick="toggleModule('module1')">MODULE 1: THE NEED TO INVEST</button>
+        <div id="module1" class="module-content">
+            <h3>MODULE 1: THE NEED TO INVEST</h3>
+            <iframe src="https://www.youtube.com/embed/-szYdVzS7_E" allowfullscreen></iframe>
+        </div>
+
+        <button class="module-header" onclick="toggleModule('module2')">MODULE 2: UNDERSTANDING STOCKS</button>
+        <div id="module2" class="module-content">
+            <h3>MODULE 2: UNDERSTANDING STOCKS</h3>
+            <iframe src="https://www.youtube.com/embed/4IjsOwbzno4" allowfullscreen></iframe>
+        </div>
+
+        <button class="module-header" onclick="toggleModule('module3')">MODULE 3: UNDERSTANDING IPO MARKET</button>
+        <div id="module3" class="module-content">
+            <h3>MODULE 3: UNDERSTANDING IPO MARKET</h3>
+            <iframe src="https://www.youtube.com/embed/IAKDxMVf3UQ" allowfullscreen></iframe>
+        </div>
+
+        <button class="module-header" onclick="toggleModule('module4')">MODULE 3: THE NEED TO INVEST</button>
+        <div id="module4" class="module-content">
+            <h3>MODULE 3: </h3>
+            <iframe src="https://drive.google.com/file/d/1oRZld-ziDpSETqHxZ1Jqj1P5TPsyZdvJ/preview" width="600" height="400"></iframe>
+
+
+        </div>
+
+    </div>
+
+    <button id="chatButton" onclick="toggleChat()">💬</button>
+
+    <div id="chatbox">
+        <div id="chatboxHeader">Investment Assistant</div>
+        <div id="chatboxMessages"></div>
+        <div id="chatboxInput">
+            <input type="text" id="userQuestion" placeholder="Ask about investing..." />
+            <button onclick="sendQuestion()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        function toggleModule(moduleId) {
+            const module = document.getElementById(moduleId);
+            if (module.classList.contains('open')) {
+                module.classList.remove('open');
+            } else {
+                document.querySelectorAll('.module-content.open').forEach(openModule => openModule.classList.remove('open'));
+                module.classList.add('open');
+            }
+        }
+
+        function toggleChat() {
+            const chatbox = document.getElementById('chatbox');
+            chatbox.style.display = chatbox.style.display === 'none' || chatbox.style.display === '' ? 'block' : 'none';
+        }
+    </script>
+
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+
+        const API_KEY = "YOUR API KEY";
+        const genAI = new GoogleGenerativeAI(API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        window.sendQuestion = async function() {
+            const userQuestion = document.getElementById('userQuestion').value;
+            const chatboxMessages = document.getElementById('chatboxMessages');
+
+            if (!userQuestion.trim()) return;
+
+            const userMessage = document.createElement('div');
+            userMessage.textContent = userQuestion;
+            userMessage.className = 'message user-message';
+            chatboxMessages.appendChild(userMessage);
+
+            document.getElementById('userQuestion').value = '';
+
+            try {
+                const result = await model.generateContent(userQuestion);
+                const response = await result.response;
+                const text = response.text();
+
+                const aiMessage = document.createElement('div');
+                aiMessage.textContent = text;
+                aiMessage.className = 'message ai-message';
+                chatboxMessages.appendChild(aiMessage);
+            } catch (error) {
+                console.error("Error generating response:", error);
+                const errorMessage = document.createElement('div');
+                errorMessage.textContent = `Sorry, I couldn't get a response. Error: ${error.message}`;
+                errorMessage.className = 'message ai-message';
+                chatboxMessages.appendChild(errorMessage);
+            }
+
+            chatboxMessages.scrollTop = chatboxMessages.scrollHeight;
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('chatbox').style.display = 'none';
+        });
+    </script>
+</body>
+
+</html>

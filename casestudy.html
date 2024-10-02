@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Case Study System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "@google/generative-ai": "https://esm.run/@google/generative-ai"
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8 text-center">Financial Case Study System</h1>
+        <div id="case-study-container" class="bg-white p-6 rounded-lg shadow-lg"></div>
+    </div>
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+
+        const API_KEY = ""; // Replace with your actual API key
+        const genAI = new GoogleGenerativeAI(API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+
+        let currentCaseStudy = null;
+        let userResponse = "";
+
+        const caseStudies = [
+            {
+                title: "Global Expansion Strategy",
+                description: "Company XYZ, a mid-sized tech firm, is considering expanding its operations to emerging markets in Southeast Asia. They have $50 million in capital to invest and are looking at potential joint ventures or acquisitions. The company's main products are cloud-based software solutions for small businesses. Your task is to analyze the situation and provide recommendations for their expansion strategy.",
+                questions: [
+                    "What are the key factors XYZ should consider when choosing which Southeast Asian country to enter first?",
+                    "How should XYZ approach the decision between a joint venture and an acquisition?",
+                    "What potential risks should XYZ be prepared for in this expansion, and how can they mitigate these risks?",
+                    "Considering XYZ's product line, how might they need to adapt their offerings for the Southeast Asian market?",
+                    "What financial metrics should XYZ focus on to measure the success of their expansion over the first 3 years?"
+                ]
+            },
+            {
+                title: "Sustainable Investment Portfolio",
+                description: "You are a financial advisor at a major investment firm. A high-net-worth client has approached you with $10 million to invest. They want a portfolio that maximizes returns while also focusing on sustainable and socially responsible investments. The client is particularly interested in renewable energy, but is open to other sectors. They have a moderate risk tolerance and a 10-year investment horizon.",
+                questions: [
+                    "How would you allocate the $10 million across different asset classes and sectors?",
+                    "What specific sustainable investment opportunities would you recommend and why?",
+                    "How would you balance the client's desire for sustainability with their need for returns?",
+                    "What risks are associated with sustainable investing, and how would you mitigate them?",
+                    "How would you measure and report on both the financial performance and social impact of this portfolio?"
+                ]
+            },
+            {
+                title: "Fintech Startup Valuation",
+                description: "You're part of a venture capital firm evaluating a fintech startup for potential investment. The startup has developed a new AI-driven personal finance app that provides personalized investment advice and automated savings features. They've been in operation for 18 months, have 500,000 active users, and are growing at 15% month-over-month. Their revenue model is subscription-based, charging $5 per month per user. The startup is seeking $20 million in Series A funding.",
+                questions: [
+                    "What valuation methods would you use to determine the startup's worth?",
+                    "What key metrics and factors would you consider in your valuation?",
+                    "How would you assess the startup's growth potential and market opportunity?",
+                    "What risks do you see in this investment, and how might they affect your valuation?",
+                    "What terms and conditions would you propose for the $20 million investment?"
+                ]
+            },
+            {
+                title: "Corporate Restructuring",
+                description: "A large multinational corporation in the retail sector is facing declining profits due to changing consumer behavior and increased competition from e-commerce. The company operates 1,000 physical stores across 20 countries and has an emerging online presence. The board has hired you as a consultant to advise on a major restructuring to improve profitability and position the company for future growth.",
+                questions: [
+                    "What key areas of the business would you focus on for restructuring?",
+                    "How would you approach the challenge of balancing cost-cutting measures with the need for strategic investments?",
+                    "What strategies would you recommend to enhance the company's online presence and integrate it with physical stores?",
+                    "How would you address potential resistance to change from employees and stakeholders?",
+                    "What financial targets would you set for the restructuring, and over what timeframe?"
+                ]
+            },
+            {
+                title: "Cryptocurrency Exchange Risk Management",
+                description: "You are the newly appointed Chief Risk Officer at a rapidly growing cryptocurrency exchange. The exchange currently supports trading for 50 different cryptocurrencies and has plans to add more. Daily trading volume exceeds $1 billion. Recent high-profile hacks at other exchanges have raised concerns about security, and regulatory scrutiny of the crypto industry is increasing.",
+                questions: [
+                    "What are the primary risks facing the cryptocurrency exchange, and how would you prioritize them?",
+                    "What specific measures would you implement to enhance the security of the exchange and protect user assets?",
+                    "How would you approach compliance with evolving regulations in different jurisdictions?",
+                    "What risk management strategies would you employ for managing the exchange's own cryptocurrency holdings?",
+                    "How would you prepare the exchange to handle extreme market volatility or a potential crypto market crash?"
+                ]
+            },
+            {
+                title: "Merger & Acquisition Strategy",
+                description: "A large pharmaceutical company is considering acquiring a promising biotech startup that has developed a breakthrough cancer treatment currently in Phase III clinical trials. The biotech company has no products on the market yet but has a strong pipeline of early-stage compounds. The pharmaceutical company sees this as an opportunity to expand its oncology portfolio and boost its long-term growth prospects. The estimated acquisition cost is $5 billion.",
+                questions: [
+                    "How would you value the biotech startup, considering its lack of current revenue but strong potential?",
+                    "What synergies could be realized from this acquisition, and how would you quantify them?",
+                    "What are the key risks associated with this acquisition, and how might they be mitigated?",
+                    "How would you structure the deal to align incentives and retain key talent from the biotech company?",
+                    "What impact would this acquisition have on the pharmaceutical company's financial statements and key ratios?"
+                ]
+            },
+            {
+                title: "ESG Investment Strategy",
+                description: "You are the Chief Investment Officer of a large pension fund. The board has decided to implement a comprehensive Environmental, Social, and Governance (ESG) strategy across its $50 billion portfolio. They want to significantly reduce the fund's carbon footprint, increase investments in companies with strong social responsibility practices, and improve the overall governance standards of portfolio companies. At the same time, the fund must continue to meet its long-term return objectives to fulfill pension obligations.",
+                questions: [
+                    "How would you approach integrating ESG factors into the fund's investment process?",
+                    "What specific ESG metrics and benchmarks would you use to evaluate potential investments?",
+                    "How would you balance ESG objectives with the need to achieve required financial returns?",
+                    "What strategies would you employ to engage with portfolio companies to improve their ESG practices?",
+                    "How would you measure and report on the impact of the ESG strategy to stakeholders?"
+                ]
+            }
+        ];
+
+        
+
+
+        window.startCaseStudy = function (index) {
+            currentCaseStudy = caseStudies[index];
+            displayCaseStudyDescription();
+        };
+
+        window.submitResponse = async function () {
+            userResponse = document.getElementById('user-response').value;
+            if (userResponse.trim() === '') {
+                alert('Please provide your analysis before submitting.');
+                return;
+            }
+
+            const container = document.getElementById('case-study-container');
+            container.innerHTML = `
+        <div class="flex items-center justify-center">
+            <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+        </div>
+        <p class="text-center mt-4">Analyzing your response...</p>
+    `;
+
+            try {
+                const feedback = await getAIFeedback();
+                displayFeedback(feedback);
+            } catch (error) {
+                console.error("Error getting AI feedback:", error);
+                container.innerHTML = `
+            <p class="text-red-500">An error occurred while analyzing your response. Please try again.</p>
+            <button id="try-again" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-300">Try Again</button>
+        `;
+                document.getElementById('try-again').addEventListener('click', displayCaseStudyDescription);
+            }
+        };
+
+        window.displayCaseStudyList = function () {
+            const container = document.getElementById('case-study-container');
+            container.innerHTML = `
+        <h2 class="text-2xl font-bold mb-4">Select a Case Study</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            ${caseStudies.map((study, index) => `
+                <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+                    <h3 class="text-lg font-semibold mb-2">${study.title}</h3>
+                    <p class="text-sm text-gray-600 mb-4">${study.description.substring(0, 100)}...</p>
+                    <button data-index="${index}" class="start-case-study bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-300">Start Case Study</button>
+                </div>
+            `).join('')}
+        </div>
+    `;
+
+            // Add event listeners to the buttons
+            document.querySelectorAll('.start-case-study').forEach(button => {
+                button.addEventListener('click', function () {
+                    startCaseStudy(parseInt(this.getAttribute('data-index')));
+                });
+            });
+        };
+
+        window.displayCaseStudyDescription = function () {
+            const container = document.getElementById('case-study-container');
+            container.innerHTML = `
+        <h2 class="text-2xl font-bold mb-4">${currentCaseStudy.title}</h2>
+        <p class="mb-4">${currentCaseStudy.description}</p>
+        <div class="mb-4">
+            <h3 class="text-lg font-semibold mb-2">Key Questions to Consider:</h3>
+            <ul class="list-disc pl-5">
+                ${currentCaseStudy.questions.map(q => `<li>${q}</li>`).join('')}
+            </ul>
+        </div>
+        <textarea id="user-response" rows="10" class="w-full p-2 border border-gray-300 rounded mb-4" placeholder="Enter your analysis here..."></textarea>
+        <button id="submit-response" class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition-colors duration-300">Submit Analysis</button>
+    `;
+
+            // Add event listener to the submit button
+            document.getElementById('submit-response').addEventListener('click', submitResponse);
+        };
+
+        async function getAIFeedback() {
+            const prompt = `
+        As a financial expert, provide feedback on the following case study response. 
+        The case study is: "${currentCaseStudy.description}"
+        
+        The user's response is: "${userResponse}"
+        
+        Please provide feedback on the following aspects:
+        1. Strengths of the analysis
+        2. Areas for improvement
+        3. Additional considerations
+        4. Overall assessment (on a scale of 1-10)
+        
+        For each of the following questions, rate the user's response on a scale of 1-5 and provide a brief explanation:
+        ${currentCaseStudy.questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
+    `;
+
+            const result = await model.generateContent(prompt);
+            return result.response.text();
+        }
+
+        window.displayFeedback = function (feedback) {
+            const container = document.getElementById('case-study-container');
+            container.innerHTML = `
+        <h2 class="text-2xl font-bold mb-4">AI Feedback on Your Analysis</h2>
+        <div id="feedback-content" class="bg-white p-6 rounded-lg shadow-md mb-4"></div>
+        <button id="return-to-list" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition-colors duration-300">Return to Case Study List</button>
+    `;
+            document.getElementById('feedback-content').innerHTML = feedback ? feedback.replace(/\n/g, '<br>') : 'No feedback available.';
+
+            // Add event listener to the return button
+            document.getElementById('return-to-list').addEventListener('click', displayCaseStudyList);
+        };
+
+        // Initialize the system
+        displayCaseStudyList();
+    </script>
+</body>
+
+</html>

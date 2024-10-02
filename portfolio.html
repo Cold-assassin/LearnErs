@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Analyzer</title>
+    <script src="https://unpkg.com/mammoth@1.4.0/mammoth.browser.min.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "@google/generative-ai": "https://esm.run/@google/generative-ai"
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #2c3e50;
+            --background-color: #f5f7fa;
+            --text-color: #333;
+            --accent-color: #e74c3c;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 20px;
+            background-color: #C24641;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #F4C2C2;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        #drop-area {
+            border: 2px dashed var(--primary-color);
+            border-radius: 20px;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #drop-area.highlight {
+            background-color: rgba(74, 144, 226, 0.1);
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        #analysis {
+            margin-top: 30px;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        #loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: var(--primary-color);
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Portfolio Analyzer</h1>
+        <div id="drop-area">
+            <p>Drag and drop your portfolio document here or click to select file</p>
+            <input type="file" id="file-input" accept=".docx,.doc">
+        </div>
+        <div id="status"></div>
+        <div id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing your portfolio...</p>
+        </div>
+        <div id="analysis"></div>
+    </div>
+
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+
+        const API_KEY = ""; // Replace with your actual API key
+        const genAI = new GoogleGenerativeAI(API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('file-input');
+        const status = document.getElementById('status');
+        const analysis = document.getElementById('analysis');
+        const loading = document.getElementById('loading');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            dropArea.classList.add('highlight');
+        }
+
+        function unhighlight() {
+            dropArea.classList.remove('highlight');
+        }
+
+        dropArea.addEventListener('drop', handleDrop, false);
+        fileInput.addEventListener('change', handleFiles, false);
+        dropArea.addEventListener('click', () => fileInput.click());
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles({ target: { files: files } });
+        }
+
+        function handleFiles(e) {
+            const file = e.target.files[0];
+            if (file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+                file.type === "application/msword") {
+                status.textContent = "File uploaded: " + file.name;
+                convertToText(file);
+            } else {
+                status.textContent = "Please upload a Word document (.doc or .docx)";
+            }
+        }
+
+        function convertToText(file) {
+            const reader = new FileReader();
+            reader.onload = function(loadEvent) {
+                const arrayBuffer = loadEvent.target.result;
+                
+                mammoth.extractRawText({ arrayBuffer: arrayBuffer })
+                    .then(result => {
+                        const text = result.value;
+                        analyzePortfolio(text);
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        status.textContent = "Error converting document to text.";
+                    });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        async function analyzePortfolio(portfolioText) {
+            loading.style.display = 'block';
+            status.textContent = "Analyzing portfolio...";
+            analysis.textContent = "";
+
+            const prompt = `Analyze the following investment portfolio and provide suggestions for improvement:
+
+${portfolioText}
+
+Please provide a detailed analysis including:
+1. Overall portfolio composition
+2. Asset allocation
+3. Diversification
+4. Risk assessment
+5. Potential areas for improvement
+6. Specific recommendations for optimizing returns and reducing risk`;
+
+            try {
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                const text = response.text();
+                
+                loading.style.display = 'none';
+                status.textContent = "Analysis complete!";
+                analysis.textContent = text;
+            } catch (error) {
+                console.error("Error generating analysis:", error);
+                loading.style.display = 'none';
+                status.textContent = "Error analyzing portfolio.";
+                analysis.textContent = "Sorry, an error occurred while analyzing your portfolio. Please try again later.";
+            }
+        }
+    </script>
+</body>
+</html>
